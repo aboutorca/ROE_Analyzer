@@ -1,0 +1,30 @@
+{
+  "name": "utility-roe-analyzer",
+  "version": "1.0.0",
+  "description": "A financial analysis tool that calculates Return on Equity (ROE) for all publicly traded utility companies in North America using data exclusively from the SEC EDGAR API",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "utility",
+    "roe",
+    "sec",
+    "edgar",
+    "financial-analysis",
+    "xbrl"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "csv-parser": "^3.0.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
