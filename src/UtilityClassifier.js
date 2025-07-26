@@ -69,8 +69,8 @@ class UtilityClassifier {
     this.knownUtilityExceptions = {
       'MDU': 'MDU Resources Group - Natural gas distribution and electric services',
       'BKH': 'Black Hills Corporation - Electric and natural gas utility',
-      'NWE': 'NorthWestern Corporation - Electric and natural gas utility',
-      'AES': 'AES Corporation - Global power generation and utilities'
+      'NWE': 'NorthWestern Corporation - Electric and natural gas utility'
+      // Note: AES removed - it's a power generator/IPP, not a regulated utility
     };
   }
 

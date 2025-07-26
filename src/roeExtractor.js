@@ -1,8 +1,10 @@
-const SECAPIClient = require('./secApiClient');
+const SECApiClient = require('./secApiClient');
+const RateLimiter = require('./rateLimiter');
 
 class ROEExtractor {
   constructor() {
-    this.apiClient = new SECAPIClient();
+    this.rateLimiter = new RateLimiter();
+    this.apiClient = new SECApiClient(this.rateLimiter);
     
     // XBRL tag fallback sequences - optimized for data availability
     this.netIncomeTagSequence = [
@@ -88,8 +90,8 @@ class ROEExtractor {
       
       // Get company facts and submissions (needed for SIC code)
       const [companyFacts, companySubmissions] = await Promise.all([
-        this.apiClient.getCompanyFacts(cik),
-        this.apiClient.getCompanySubmissions(cik)
+        this.apiClient.fetchCompanyFacts(cik),
+        this.apiClient.fetchCompanySubmissions(cik)
       ]);
       const facts = companyFacts.facts;
       
@@ -159,7 +161,7 @@ class ROEExtractor {
       // Format output according to PRD specification
       const result = {
         ticker: ticker.toUpperCase(),
-        cik: this.apiClient.formatCIK(cik),
+        cik: cik.toString().padStart(10, '0'),
         company_name: companyFacts.entityName,
         sic_code: companySubmissions.sic?.toString() || null,
         fiscal_year: parseInt(recentNetIncome.fy),
