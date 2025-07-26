@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, TrendingUp, Building, DollarSign, Percent } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { UtilityAppSidebar } from "@/components/utility-app-sidebar";
 
 interface CompanyData {
   current_roe: {
@@ -52,6 +54,16 @@ interface CompanyData {
   };
 }
 
+interface FilterState {
+  timeframe: string
+  fiscalPeriod: string
+  sicCodes: string[]
+  exchanges: string[]
+  showOnlyPositiveROE: boolean
+  minROE?: number
+  maxROE?: number
+}
+
 export default function CompanyPage() {
   const params = useParams();
   const router = useRouter();
@@ -59,6 +71,19 @@ export default function CompanyPage() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterState>({
+    timeframe: "5y",
+    fiscalPeriod: "FY",
+    sicCodes: [],
+    exchanges: [],
+    showOnlyPositiveROE: false,
+  });
+
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+    console.log('Filters updated:', newFilters);
+    // TODO: Apply filters to data fetching and display
+  };
 
   useEffect(() => {
     const fetchCompanyData = async () => {
@@ -81,46 +106,74 @@ export default function CompanyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading company data...</p>
+      <SidebarProvider>
+        <div className="flex h-screen w-full">
+          <UtilityAppSidebar onFiltersChange={handleFiltersChange} />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Loading company data...</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   if (error || !companyData) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Company Not Found</h1>
-          <p className="text-muted-foreground mb-4">{error}</p>
-          <Button onClick={() => router.push('/')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Search
-          </Button>
+      <SidebarProvider>
+        <div className="flex h-screen w-full">
+          <UtilityAppSidebar onFiltersChange={handleFiltersChange} />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-4">Company Not Found</h1>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={() => router.push('/')}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Search
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
-  // Prepare chart data
-  const chartData = companyData.historical_roe.map(item => ({
+  // Prepare chart data with filter application
+  let chartData = companyData.historical_roe.map(item => ({
     year: item.year.toString(),
     roe: (item.roe * 100).toFixed(2)
   }));
 
+  // Apply timeframe filter
+  if (filters.timeframe !== 'all') {
+    const years = parseInt(filters.timeframe.replace('y', ''));
+    const currentYear = new Date().getFullYear();
+    chartData = chartData.filter(item => 
+      parseInt(item.year) >= (currentYear - years)
+    );
+  }
+
+  // Apply positive ROE filter
+  if (filters.showOnlyPositiveROE) {
+    chartData = chartData.filter(item => parseFloat(item.roe) > 0);
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => router.push('/')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Search
-            </Button>
+    <SidebarProvider>
+      <div className="flex h-screen w-full">
+        <UtilityAppSidebar onFiltersChange={handleFiltersChange} />
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto p-6 space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger className="md:hidden" />
+                <Button variant="ghost" onClick={() => router.push('/')}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Search
+                </Button>
             <div>
               <h1 className="text-3xl font-bold">{companyData.company_info.company_name}</h1>
               <div className="flex items-center space-x-2 mt-1">
@@ -280,8 +333,10 @@ export default function CompanyPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

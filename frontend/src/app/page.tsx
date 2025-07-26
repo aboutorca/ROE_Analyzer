@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Card } from "@/components/ui/card";
@@ -15,19 +15,27 @@ interface Utility {
 export default function Home() {
   const [searchResults, setSearchResults] = useState<Utility[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    
     if (query.length < 1) {
       setSearchResults([]);
+      setIsSearching(false);
       return;
     }
 
     setIsSearching(true);
     try {
       const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const results = await response.json();
-      setSearchResults(results);
+      console.log('Search results for "' + query + '":', results); // Debug log
+      setSearchResults(Array.isArray(results) ? results : []);
     } catch (error) {
       console.error('Search failed:', error);
       setSearchResults([]);
@@ -55,23 +63,28 @@ export default function Home() {
 
         {/* Search Interface */}
         <Card className="p-6">
-          <Command className="rounded-lg border shadow-md">
+          <Command className="rounded-lg border shadow-md" shouldFilter={false}>
             <CommandInput
               placeholder="Search utility companies (e.g., MDU, Dominion Energy)..."
               onValueChange={handleSearch}
+              value={searchQuery}
             />
             <CommandList>
               {isSearching && (
                 <CommandEmpty>Searching...</CommandEmpty>
               )}
-              {!isSearching && searchResults.length === 0 && (
+              {!isSearching && searchQuery.length > 0 && searchResults.length === 0 && (
                 <CommandEmpty>No utilities found. Try searching for a ticker or company name.</CommandEmpty>
+              )}
+              {!isSearching && searchQuery.length === 0 && (
+                <CommandEmpty>Start typing to search for utility companies...</CommandEmpty>
               )}
               {searchResults.length > 0 && (
                 <CommandGroup heading="Utilities">
                   {searchResults.map((utility) => (
                     <CommandItem
                       key={utility.ticker}
+                      value={utility.ticker}
                       onSelect={() => handleSelectUtility(utility.ticker)}
                       className="cursor-pointer"
                     >
