@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, TrendingUp, Building, DollarSign, Percent } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, CartesianGrid, XAxis } from "recharts";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UtilityAppSidebar } from "@/components/utility-app-sidebar";
 
@@ -54,15 +54,7 @@ interface CompanyData {
   };
 }
 
-interface FilterState {
-  timeframe: string
-  fiscalPeriod: string
-  sicCodes: string[]
-  exchanges: string[]
-  showOnlyPositiveROE: boolean
-  minROE?: number
-  maxROE?: number
-}
+
 
 export default function CompanyPage() {
   const params = useParams();
@@ -71,19 +63,9 @@ export default function CompanyPage() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<FilterState>({
-    timeframe: "5y",
-    fiscalPeriod: "FY",
-    sicCodes: [],
-    exchanges: [],
-    showOnlyPositiveROE: false,
-  });
 
-  const handleFiltersChange = (newFilters: FilterState) => {
-    setFilters(newFilters);
-    console.log('Filters updated:', newFilters);
-    // TODO: Apply filters to data fetching and display
-  };
+
+
 
   useEffect(() => {
     const fetchCompanyData = async () => {
@@ -108,7 +90,7 @@ export default function CompanyPage() {
     return (
       <SidebarProvider>
         <div className="flex h-screen w-full">
-          <UtilityAppSidebar onFiltersChange={handleFiltersChange} />
+          <UtilityAppSidebar />
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
@@ -124,7 +106,7 @@ export default function CompanyPage() {
     return (
       <SidebarProvider>
         <div className="flex h-screen w-full">
-          <UtilityAppSidebar onFiltersChange={handleFiltersChange} />
+          <UtilityAppSidebar />
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <h1 className="text-2xl font-bold mb-4">Company Not Found</h1>
@@ -141,29 +123,17 @@ export default function CompanyPage() {
   }
 
   // Prepare chart data with filter application
-  let chartData = companyData.historical_roe.map(item => ({
+  const chartData = companyData.historical_roe.map(item => ({
     year: item.year.toString(),
-    roe: (item.roe * 100).toFixed(2)
+    roe: parseFloat((item.roe * 100).toFixed(2))
   }));
 
-  // Apply timeframe filter
-  if (filters.timeframe !== 'all') {
-    const years = parseInt(filters.timeframe.replace('y', ''));
-    const currentYear = new Date().getFullYear();
-    chartData = chartData.filter(item => 
-      parseInt(item.year) >= (currentYear - years)
-    );
-  }
-
-  // Apply positive ROE filter
-  if (filters.showOnlyPositiveROE) {
-    chartData = chartData.filter(item => parseFloat(item.roe) > 0);
-  }
+  // No filters applied - show all historical data
 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        <UtilityAppSidebar onFiltersChange={handleFiltersChange} />
+        <UtilityAppSidebar />
         <div className="flex-1 overflow-auto">
           <div className="container mx-auto p-6 space-y-6">
             {/* Header */}
@@ -177,7 +147,14 @@ export default function CompanyPage() {
             <div>
               <h1 className="text-3xl font-bold">{companyData.company_info.company_name}</h1>
               <div className="flex items-center space-x-2 mt-1">
-                <Badge variant="secondary">{companyData.company_info.ticker}</Badge>
+                <Badge 
+                  variant="secondary" 
+                  className="cursor-pointer hover:bg-secondary/80 transition-colors"
+                  onClick={() => window.open(`https://finance.yahoo.com/quote/${companyData.company_info.ticker}/`, '_blank')}
+                >
+                  {companyData.company_info.ticker}
+                  <ExternalLink className="ml-1 h-3 w-3" />
+                </Badge>
                 <Badge variant="outline">{companyData.company_info.classification}</Badge>
                 <span className="text-sm text-muted-foreground">
                   SIC {companyData.company_info.sic_code} • {companyData.company_info.sic_description}
@@ -195,7 +172,7 @@ export default function CompanyPage() {
               <Percent className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-green-600">
                 {companyData.current_roe.percentage}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -210,12 +187,21 @@ export default function CompanyPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold">
                 {companyData.financial_metrics.net_income.formatted}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mb-2">
                 Annual earnings
               </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => window.open(companyData.calculation_details.filing_url, '_blank')}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Verify in SEC Filing
+              </Button>
             </CardContent>
           </Card>
 
@@ -225,12 +211,21 @@ export default function CompanyPage() {
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold">
                 {companyData.financial_metrics.stockholders_equity.formatted}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mb-2">
                 Book value
               </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => window.open(companyData.calculation_details.filing_url, '_blank')}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Verify in SEC Filing
+              </Button>
             </CardContent>
           </Card>
 
@@ -240,7 +235,7 @@ export default function CompanyPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold">
                 {companyData.financial_metrics.total_assets.formatted}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -263,25 +258,45 @@ export default function CompanyPage() {
               config={{
                 roe: {
                   label: "ROE %",
-                  color: "hsl(var(--chart-1))",
+                  color: "var(--primary)",
                 },
               }}
-              className="h-[300px]"
+              className="aspect-auto h-[250px] w-full"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="roe" 
-                    stroke="var(--color-roe)" 
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="fillROE" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-roe)"
+                      stopOpacity={1.0}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-roe)"
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="year"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  minTickGap={32}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Area
+                  dataKey="roe"
+                  type="natural"
+                  fill="url(#fillROE)"
+                  stroke="var(--color-roe)"
+                />
+              </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>

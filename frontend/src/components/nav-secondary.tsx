@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { type Icon } from "@tabler/icons-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 import {
   SidebarGroup,
@@ -35,6 +36,10 @@ export function NavSecondary({
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          {/* Dark Mode Toggle */}
+          <SidebarMenuItem>
+            <ThemeToggle />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

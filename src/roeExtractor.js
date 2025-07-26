@@ -18,6 +18,13 @@ class ROEExtractor {
       'StockholdersEquity',
       'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'
     ];
+    
+    this.totalAssetsTagSequence = [
+      'Assets',                                    // Most commonly available
+      'AssetsTotal',                              // Alternative tag
+      'AssetsCurrent',                            // Current assets if total not available
+      'AssetsNoncurrent'                          // Non-current assets fallback
+    ];
   }
 
   // Extract financial data using fallback logic
