@@ -334,8 +334,8 @@ class ROEExtractor {
           }
         },
         calculation_details: {
-          formula: `ROE = ${netIncomeValue.toLocaleString()} ÷ ${equityValue.toLocaleString()} = ${roePercentage}%`,
-          source_filing: `${recentNetIncome.form || '10-K'} filed ${recentNetIncome.filed}`,
+          formula: `• Net Income: $${netIncomeValue.toLocaleString()}\n• Stockholders' Equity: $${equityValue.toLocaleString()}\n• Formula: Net Income ÷ Stockholders' Equity × 100\n• Result: $${netIncomeValue.toLocaleString()} ÷ $${equityValue.toLocaleString()} × 100 = ${roePercentage}%`,
+          source_filing: `${companyFacts.entityName} ${recentNetIncome.form || '10-K'} filed ${recentNetIncome.filed}`,
           filing_url: filingUrl,
           accession_number: recentNetIncome.accn,
           tags_used: {

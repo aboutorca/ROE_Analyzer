@@ -326,41 +326,43 @@ export default function CompanyPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">ROE Formula</h4>
-              <code className="bg-muted p-2 rounded block text-sm">
-                {companyData.calculation_details.formula}
-              </code>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-2">XBRL Tags Used</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="font-medium">Net Income: </span>
-                  <code className="bg-muted px-1 rounded">{companyData.calculation_details.tags_used.net_income}</code>
-                </div>
-                <div>
-                  <span className="font-medium">Equity: </span>
-                  <code className="bg-muted px-1 rounded">{companyData.calculation_details.tags_used.equity}</code>
-                </div>
+            <div className="bg-muted p-3 rounded text-base font-mono flex justify-center">
+              <div className="text-left">
+              {companyData.calculation_details.formula.split('\n').map((line, index) => {
+                // Check if this is the result line (contains the final percentage)
+                const isResultLine = line.includes('• Result:');
+                const percentageMatch = line.match(/(\d+\.\d+%)$/);
+                
+                if (isResultLine && percentageMatch) {
+                  const beforePercentage = line.substring(0, line.lastIndexOf(percentageMatch[1]));
+                  const percentage = percentageMatch[1];
+                  return (
+                    <div key={index} className="mb-1 last:mb-0">
+                      {beforePercentage}
+                      <span className="text-green-600 font-semibold">{percentage}</span>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div key={index} className="mb-1 last:mb-0">
+                    {line}
+                  </div>
+                );
+              })}
               </div>
             </div>
-
             <div>
-              <h4 className="font-semibold mb-2">Source Filing</h4>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{companyData.calculation_details.source_filing}</span>
-                <Button variant="outline" size="sm" asChild>
-                  <a 
-                    href={companyData.calculation_details.xbrl_viewer_urls?.net_income || companyData.calculation_details.filing_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    View SEC Filing
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+              <h4 className="font-semibold mb-1">Source Filing</h4>
+              <div>
+                <a 
+                  href={companyData.calculation_details.xbrl_viewer_urls?.net_income || companyData.calculation_details.filing_url}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:text-primary/80 hover:underline cursor-pointer"
+                >
+                  {companyData.calculation_details.source_filing}
+                </a>
               </div>
             </div>
           </CardContent>

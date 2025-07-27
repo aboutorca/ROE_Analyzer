@@ -63,6 +63,11 @@ const data = {
       url: "#",
       icon: IconTrendingUp,
     },
+    {
+      title: "Search",
+      url: "/",
+      icon: IconSearch,
+    },
   ],
   navSecondary: [
     {
@@ -74,11 +79,6 @@ const data = {
       title: "Help",
       url: "#",
       icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "/",
-      icon: IconSearch,
     },
   ],
 }
