@@ -47,9 +47,16 @@ interface CompanyData {
     formula: string;
     source_filing: string;
     filing_url: string;
+    accession_number: string;
     tags_used: {
       net_income: string;
       equity: string;
+      total_assets: string | null;
+    };
+    xbrl_viewer_urls: {
+      net_income: string;
+      equity: string;
+      total_assets: string | null;
     };
   };
 }
@@ -197,7 +204,7 @@ export default function CompanyPage() {
                 variant="outline" 
                 size="sm" 
                 className="h-7 text-xs"
-                onClick={() => window.open(companyData.calculation_details.filing_url, '_blank')}
+                onClick={() => window.open(companyData.calculation_details.xbrl_viewer_urls?.net_income || companyData.calculation_details.filing_url, '_blank')}
               >
                 <ExternalLink className="h-3 w-3 mr-1" />
                 Verify in SEC Filing
@@ -221,7 +228,7 @@ export default function CompanyPage() {
                 variant="outline" 
                 size="sm" 
                 className="h-7 text-xs"
-                onClick={() => window.open(companyData.calculation_details.filing_url, '_blank')}
+                onClick={() => window.open(companyData.calculation_details.xbrl_viewer_urls?.equity || companyData.calculation_details.filing_url, '_blank')}
               >
                 <ExternalLink className="h-3 w-3 mr-1" />
                 Verify in SEC Filing
@@ -238,9 +245,18 @@ export default function CompanyPage() {
               <div className="text-3xl font-bold">
                 {companyData.financial_metrics.total_assets.formatted}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mb-2">
                 Total company assets
               </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => window.open(companyData.calculation_details.xbrl_viewer_urls?.total_assets || companyData.calculation_details.filing_url, '_blank')}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Verify in SEC Filing
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -337,7 +353,7 @@ export default function CompanyPage() {
                 <span className="text-sm">{companyData.calculation_details.source_filing}</span>
                 <Button variant="outline" size="sm" asChild>
                   <a 
-                    href={companyData.calculation_details.filing_url} 
+                    href={companyData.calculation_details.xbrl_viewer_urls?.net_income || companyData.calculation_details.filing_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
                   >

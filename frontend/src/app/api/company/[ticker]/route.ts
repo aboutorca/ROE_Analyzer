@@ -337,9 +337,16 @@ class ROEExtractor {
           formula: `ROE = ${netIncomeValue.toLocaleString()} ÷ ${equityValue.toLocaleString()} = ${roePercentage}%`,
           source_filing: `${recentNetIncome.form || '10-K'} filed ${recentNetIncome.filed}`,
           filing_url: filingUrl,
+          accession_number: recentNetIncome.accn,
           tags_used: {
             net_income: netIncomeData.tag,
-            equity: equityData.tag
+            equity: equityData.tag,
+            total_assets: totalAssetsData?.tag || null
+          },
+          xbrl_viewer_urls: {
+            net_income: `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cik}&accession_number=${recentNetIncome.accn.replace(/-/g, '')}&xbrl_type=v#menu_cat3`,
+            equity: `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cik}&accession_number=${recentEquity.accn.replace(/-/g, '')}&xbrl_type=v#menu_cat3`,
+            total_assets: recentTotalAssets ? `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cik}&accession_number=${recentTotalAssets.accn.replace(/-/g, '')}&xbrl_type=v#menu_cat3` : null
           }
         },
         last_updated: new Date().toISOString()
