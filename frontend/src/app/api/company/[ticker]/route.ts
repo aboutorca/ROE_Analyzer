@@ -361,9 +361,10 @@ class ROEExtractor {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { ticker: string } }
+  { params }: { params: Promise<{ ticker: string }> }
 ) {
-  const ticker = params.ticker.toUpperCase();
+  const resolvedParams = await params;
+  const ticker = resolvedParams.ticker.toUpperCase();
 
   try {
     console.log(`🚀 API Request: Fetching real-time data for ${ticker}`);
