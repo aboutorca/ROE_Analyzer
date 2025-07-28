@@ -1,5 +1,5 @@
-const SECApiClient = require('./secApiClient');
-const RateLimiter = require('./rateLimiter');
+import SECApiClient from './secApiClient.js';
+import RateLimiter from './rateLimiter.js';
 
 class ROEExtractor {
   constructor() {
@@ -212,4 +212,4 @@ class ROEExtractor {
   }
 }
 
-module.exports = ROEExtractor;
+export default ROEExtractor;

@@ -69,4 +69,4 @@ class SECApiClient {
     }
   }
   
-  module.exports = SECApiClient;
+  export default SECApiClient;
